@@ -1,6 +1,8 @@
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/User.model.js";
+import {fileupload} from "../utils/Cloudinary.js";
+import { Apiresponse } from "../utils/Apiresponse.js";
 
 const registeruser = asynchandler(async (req, res) => {
 
@@ -16,12 +18,41 @@ const registeruser = asynchandler(async (req, res) => {
     throw new ApiError(409,"User Already Exist");
    }
 
+
+   const localavatar = req.files?.avatar[0]?.path
+   const localcoverImage = req.files?.coverImage[0].path
+
+   if (!localavatar) {
+      throw new ApiError(400,"Fill required field")
+   }
+
+   const avatar = await fileupload(localavatar);
+   const coverImage = await fileupload(localcoverImage);
+
+   if (!avatar) {
+      throw new ApiError(400,"Fill required field")
+   }
+
+   const user = await User.create({
+      fullname,
+      username,
+      email,
+      password,
+      avatar: avatar.Url,
+      coverImage: coverImage?.Url || ""   })
    
+   const createduser = await User.findById(user._id).select("-password -refrehToken")
+
+   if(!createduser){
+      throw new ApiError(500,"Internal Server Error")
+   }
 
 
-   
+   return res.status(200).json(
+      new Apiresponse(200,createduser,"User Registered Successfully")
+   )
 
-   
+
 });
 
 export {registeruser}
