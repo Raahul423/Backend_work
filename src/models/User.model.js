@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
         ref: "Vedio",
       },
     ],
-    refrehToken: {
+    refreshToken: {
       type: String,
     },
   },
