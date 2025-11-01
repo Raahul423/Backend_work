@@ -8,7 +8,6 @@ import path from "path";
 
 const registeruser = asynchandler(async (req, res) => {
   const { fullname, username, email, password } = req.body;
-  console.log(req.body);
 
   if (fullname == "" || username == "" || email == "" || password == "") {
     throw new ApiError(400, "Please Fill All Required Field");
@@ -21,20 +20,14 @@ const registeruser = asynchandler(async (req, res) => {
   }
 
   const localavatar =(req.files?.avatar[0]?.path);
-  const localcoverImage =(req.files?.coverImage[0].path);
-  console.log("Files received =>", req.files);
-  console.log("localavatar =>", localavatar);
-  console.log("localcoverImage =>", localcoverImage);
+  const localcoverImage =(req.files?.coverImage?.[0]?.path || "");
 
   if (!localavatar) {
     throw new ApiError(400, "Fill is required field");
   }
 
   const avatar = await fileupload(localavatar);
-  console.log(avatar);
-  
   const coverImage = await fileupload(localcoverImage);
-   console.log(coverImage);
 
   if (!avatar) {
     throw new ApiError(400, "Fill this required field");
