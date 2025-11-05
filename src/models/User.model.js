@@ -60,7 +60,7 @@ UserSchema.methods.ispasswordcorrect = async function (password) {
   return await bycrpt.compare(password, this.password);
 };
 
-UserSchema.methods.generaterefreshtoken = function () {
+UserSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       id: this._id,
@@ -75,7 +75,7 @@ UserSchema.methods.generaterefreshtoken = function () {
 };
 
 
-UserSchema.methods.refrehToken= function(){
+UserSchema.methods.generateRefreshToken= function(){
   return jwt.sign(
     {
       id: this._id,
