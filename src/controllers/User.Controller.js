@@ -12,8 +12,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   user.refreshToken = refreshToken;
   user.save({ validateBeforeSave: false });
 
-  return {accessToken,refreshToken}
-
+  return { accessToken, refreshToken };
 };
 
 const registeruser = asynchandler(async (req, res) => {
@@ -80,21 +79,44 @@ const LoginUser = asynchandler(async (req, res) => {
   }); // Find user from database
 
   if (!user) {
-    throw new ApiError(404, "User not Registered");
-  }
+    throw new ApiError(400, "User not Registered");
+  } // if user not find in db then
 
-  const passwordcheck = await user.ispasswordcorrect(password);
+  const passwordcheck = await user.ispasswordcorrect(password); // check password by db and user enter password
 
   if (!passwordcheck) {
     throw new ApiError(400, "Password is incorrect");
-  }
+  } // if password not match or empty data then send this message
+
+ const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user._id); // generate accesstoken or refreshtoken by with the help og userid 
 
 
-  await generateAccessAndRefreshToken(user._id)
+  const options = {
+    httpOnly:true,
+    secure:true
+  } // option store in user cookie
 
 
-
-
+  return res.status(200)
+  .cookie("AccessToken",accessToken,options)
+  .cookie("RefreshToken",refreshToken,options)
+  .json(new Apiresponse(200,{user:LoginUser,accessToken,refreshToken},"User Successfully logged in"))
 });
 
-export { registeruser };
+
+const LogoutUser = asynchandler(async(req,res)=>{
+  await User.findByIdAndUpdate(req.user._id,{$set:{refreshToken:undefined}})
+
+ const options = {
+    httpOnly:true,
+    secure:true
+  } 
+
+ return res.status(200)
+ .clearCookies("accessToken",accessToken,options)
+ .clearCookies("refreshToken",refreshToken,options)
+ .json(new Apiresponse(200,{},"User Logged Out"))
+})
+
+
+export { registeruser, LoginUser, LogoutUser };
