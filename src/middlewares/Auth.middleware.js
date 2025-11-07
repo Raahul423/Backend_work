@@ -7,8 +7,6 @@ const verifyJWT = asynchandler(async (req, res, next) => {
   try {
     const token =
       req.cookies?.accessToken || req.headers?.authorization?.split(" ")[1];
-
-        console.log(token);
         
     if (!token) {
       throw new ApiError(401, "Token not Found");
