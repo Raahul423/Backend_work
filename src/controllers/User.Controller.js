@@ -5,7 +5,7 @@ import fileupload from "../utils/Cloudinary.js";
 import { Apiresponse } from "../utils/Apiresponse.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
-  const user = User.findById(userId);
+  const user = await User.findById(userId);
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
 
@@ -51,8 +51,6 @@ const registeruser = asynchandler(async (req, res) => {
     coverImage: coverImage?.url || "",
   });
 
-  console.log(avatar);
-  console.log(coverImage);
 
   const createduser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -67,16 +65,21 @@ const registeruser = asynchandler(async (req, res) => {
     .json(new Apiresponse(200, createduser, "User Registered Successfully"));
 });
 
+
+// User Login Logic
+
 const LoginUser = asynchandler(async (req, res) => {
   const { username, email, password } = req.body; // Take data from User
 
-  if (!username || !email) {
+  if (!username && !email) {
     throw new ApiError(400, "uername or email is required");
   } // check user fill one of them field
+  
 
   const user = await User.findOne({
     $or: [{ username }, { email }],
   }); // Find user from database
+
 
   if (!user) {
     throw new ApiError(400, "User not Registered");
@@ -93,15 +96,19 @@ const LoginUser = asynchandler(async (req, res) => {
 
   const options = {
     httpOnly:true,
-    secure:true
+   secure: true
   } // option store in user cookie
 
 
   return res.status(200)
-  .cookie("AccessToken",accessToken,options)
-  .cookie("RefreshToken",refreshToken,options)
-  .json(new Apiresponse(200,{user:LoginUser,accessToken,refreshToken},"User Successfully logged in"))
+  .cookie("accessToken",accessToken,options)
+  .cookie("refreshToken",refreshToken,options)
+  .json(new Apiresponse(200,{user:user,accessToken,refreshToken},"User Successfully logged in"))
 });
+
+
+
+// User LogOut Logic
 
 
 const LogoutUser = asynchandler(async(req,res)=>{
@@ -113,8 +120,8 @@ const LogoutUser = asynchandler(async(req,res)=>{
   } 
 
  return res.status(200)
- .clearCookies("accessToken",accessToken,options)
- .clearCookies("refreshToken",refreshToken,options)
+ .clearCookie("accessToken",options)
+ .clearCookie("refreshToken",options)
  .json(new Apiresponse(200,{},"User Logged Out"))
 })
 

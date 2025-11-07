@@ -20,6 +20,6 @@ router.route("/register").post(
 
 router.route("/login").post(LoginUser);
 
-router.route("logout").post( verifyJWT , LogoutUser )
+router.route("/logout").post( verifyJWT , LogoutUser )
 
 export { router };
