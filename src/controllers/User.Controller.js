@@ -130,14 +130,11 @@ const LogoutUser = asynchandler(async (req, res) => {
     .json(new Apiresponse(200, {}, "User Logged Out"));
 });
 
-
-
-
 //User Add New RefreshToken when Accesstoken Expire then renew token
 
 const accessandrefreshToken = asynchandler(async (req, res) => {
-
-  const incomingRefreshToken=req.cookie?.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken =
+    req.cookie?.refreshToken || req.body.refreshToken;
   // when i was find the refresh token from user cookie
 
   if (!incomingRefreshToken) {
@@ -149,67 +146,87 @@ const accessandrefreshToken = asynchandler(async (req, res) => {
 
   const user = await User.findById(decoded?._id);
 
-  if(!user){
-    throw new ApiError(401,"Token not valid");
+  if (!user) {
+    throw new ApiError(401, "Token not valid");
   }
 
-  if(incomingRefreshToken !== user?.refreshToken){
-    throw new ApiError(401,"refresh and accessToken are expired")
+  if (incomingRefreshToken !== user?.refreshToken) {
+    throw new ApiError(401, "refresh and accessToken are expired");
   }
 
-  const {accessToken , newrefreshToken} = await generateAccessAndRefreshToken(user._id);
+  const { accessToken, newrefreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
 
   const option = {
-    httpOnly:true,
-    secure:true
-  }
+    httpOnly: true,
+    secure: true,
+  };
 
-  res.status(200)
-  .cookie("accessToken",accessToken,option)
-  .cookie("refreshToken",newrefreshToken)
-  .res(
-    new Apiresponse(
-      200,
-      {accessToken,newrefreshToken},
-      "Accesstoken refreshed"
-    )
-  )
-
+  res
+    .status(200)
+    .cookie("accessToken", accessToken, option)
+    .cookie("refreshToken", newrefreshToken)
+    .res(
+      new Apiresponse(
+        200,
+        { accessToken, newrefreshToken },
+        "Accesstoken refreshed"
+      )
+    );
 });
-
-
 
 // change Password
 
-const changepassword = asynchandler(async(req,res)=>{
-
-  const {oldpassword,newpassword} = req.body
+const changepassword = asynchandler(async (req, res) => {
+  const { oldpassword, newpassword } = req.body;
 
   const user = await User.findById(req.user?._id);
 
-  if(!user){
-    throw new ApiError(400,"Token Invalisd")
+  if (!user) {
+    throw new ApiError(400, "Token Invalisd");
   }
 
-   const passwordcorrect= await user.ispasswordcorrect(oldpassword);
-   
-   if(!oldpassword){
-    throw new ApiError(400,"Incorrect Password")
-   }
+  const passwordcorrect = await user.ispasswordcorrect(oldpassword);
 
-   // set new password 
+  if (!oldpassword) {
+    throw new ApiError(400, "Incorrect Password");
+  }
 
-   user.password = newpassword;
-   await user.save({validateBeforeSave:false});
+  // set new password
 
-   return res.status(200).json(new Apiresponse(200,{},"Password updated sucessfully"));
+  user.password = newpassword;
+  await user.save({ validateBeforeSave: false });
 
-   // current user 
+  return res
+    .status(200)
+    .json(new Apiresponse(200, {}, "Password updated sucessfully"));
+});
 
-   const getcurrentuser = asynchandler(async(req,res)=>{
-    return res.status(200).json(new Apiresponse(200,req.user,"user fetched sucessfully"));
-   })
+const getcurrentuser = asynchandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new Apiresponse(200, req.user, "user fetched sucessfully"));
+});
 
-})
+//updated account details
 
-export { registeruser, LoginUser, LogoutUser, accessandrefreshToken };
+const updateaccountdetails = asynchandler(async (req, res) => {
+  const { fullname, email } = req.body;
+
+  if (!(fullname || email)) {
+    throw new ApiError(400, "please fill both field");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: { fullname, email },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(new Apiresponse(200, user, "account updated"));
+});
+
+export { registeruser, LoginUser, LogoutUser, accessandrefreshToken,updateaccountdetails,getcurrentuser,changepassword };
