@@ -243,7 +243,7 @@ const updateAvatar = asynchandler(async (req, res) => {
   }
 
   const user = await User.findByIdAndUpdate(
-    avatar,
+    req.user?._id,
     {
       $set: { avatar: avatar.url },
     },
@@ -268,7 +268,7 @@ const updatecoverImage = asynchandler(async (req, res) => {
   }
 
   const user = await User.findByIdAndUpdate(
-    avatar,
+    req,user?._id,
     {
       $set: { coverImage: coverImage.url },
     },
@@ -287,5 +287,5 @@ export {
   getcurrentuser,
   changepassword,
   updateAvatar,
-
+  updatecoverImage
 };
