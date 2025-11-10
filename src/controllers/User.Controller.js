@@ -229,4 +229,63 @@ const updateaccountdetails = asynchandler(async (req, res) => {
   return res.status(200).json(new Apiresponse(200, user, "account updated"));
 });
 
-export { registeruser, LoginUser, LogoutUser, accessandrefreshToken,updateaccountdetails,getcurrentuser,changepassword };
+const updateAvatar = asynchandler(async (req, res) => {
+  const avatarlocal = req.file?.path;
+
+  if (!avatarlocal) {
+    throw new ApiError(400, "Avatar is required");
+  }
+
+  const avatar = await fileupload(avatarlocal);
+
+  if (!avatar.url) {
+    throw new ApiError(200, "upload failed file in cloudinary");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    avatar,
+    {
+      $set: { avatar: avatar.url },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(new Apiresponse(200,user,"Avatar Updated Sucessfully"));
+});
+
+
+const updatecoverImage = asynchandler(async (req, res) => {
+  const coverImagelocal = req.file?.path;
+
+  if (!coverImagelocal) {
+    throw new ApiError(400, "coverImage is required");
+  }
+
+  const coverImage = await fileupload(coverImagelocal);
+
+  if (!coverImage.url) {
+    throw new ApiError(200, "upload failed file in cloudinary");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    avatar,
+    {
+      $set: { coverImage: coverImage.url },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(new Apiresponse(200,user,"coverImage Updated Sucessfully"));
+});
+
+export {
+  registeruser,
+  LoginUser,
+  LogoutUser,
+  accessandrefreshToken,
+  updateaccountdetails,
+  getcurrentuser,
+  changepassword,
+  updateAvatar,
+
+};
