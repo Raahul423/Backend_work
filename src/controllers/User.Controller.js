@@ -4,6 +4,7 @@ import { User } from "../models/User.model.js";
 import fileupload from "../utils/Cloudinary.js";
 import { Apiresponse } from "../utils/Apiresponse.js";
 import jwt from "jsonwebtoken";
+import { set } from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   const user = await User.findById(userId);
@@ -175,5 +176,35 @@ const accessandrefreshToken = asynchandler(async (req, res) => {
   )
 
 });
+
+
+
+// change Password
+
+const changepassword = asynchandler(async(req,res)=>{
+
+  const {oldpassword,newpassword} = req.body
+
+  const user = await User.findById(req.user?._id);
+
+  if(!user){
+    throw new ApiError(400,"Token Invalisd")
+  }
+
+   const passwordcorrect= await user.ispasswordcorrect(oldpassword);
+   
+   if(!oldpassword){
+    throw new ApiError(400,"Incorrect Password")
+   }
+
+   // set new password 
+
+   user.password = newpassword;
+   await user.save({validateBeforeSave:false});
+
+   return res.status(200).json(new Apiresponse(200,{},"Password updated sucessfully"));
+
+
+})
 
 export { registeruser, LoginUser, LogoutUser, accessandrefreshToken };
