@@ -278,6 +278,64 @@ const updatecoverImage = asynchandler(async (req, res) => {
   return res.status(200).json(new Apiresponse(200,user,"coverImage Updated Sucessfully"));
 });
 
+
+// aggrigation pipelines
+
+const getUserChnnelprofile = asynchandler(async(req,res)=>{
+  const channel = await User.aggregate([
+    {
+      $match:{
+        username:username
+      }
+    },
+    {
+      $lookup:{
+        from:"subscriptions",
+        localField:"_id",
+        foreignField:"channel",
+        as:"subscribers"
+      }
+    },
+    {
+      $lookup:{
+        from:"subscribers",
+        localField:"_id",
+        foreignField:"subscription",
+        as:"subscribeTo"
+      }
+    },
+    {
+      $addFields:{
+        subscriberCount:{
+          $size:"$subscribers"
+        },
+        channel:{
+          $size:"$subscribeTo"
+        },
+        isSubscribed:{
+          $cond:{
+            if:{$in:[req.user?._id,"$subscribers"]},
+            then:true,
+            else:false
+          }
+        }
+      }
+    },
+    {
+      $project:{
+        fullName:1,
+        username:1,
+        email:1,
+        avatar:1,
+        subscriberCount:1,
+        channel:1,
+        isSubscribed:1,
+        coverImage:1
+      }
+    }
+  ])
+});
+
 export {
   registeruser,
   LoginUser,
@@ -287,5 +345,6 @@ export {
   getcurrentuser,
   changepassword,
   updateAvatar,
-  updatecoverImage
+  updatecoverImage,
+  getUserChnnelprofile
 };

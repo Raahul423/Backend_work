@@ -24,4 +24,5 @@ router.route("/logout").post( verifyJWT , LogoutUser )
 
 router.route("/refresh-token").post(accessandrefreshToken);
 
+
 export { router };

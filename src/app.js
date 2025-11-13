@@ -17,7 +17,4 @@ import {router} from "./routes/User.route.js"
 app.use("/users",router)
 
 
-
-
-
 export {app}
