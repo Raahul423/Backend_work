@@ -105,7 +105,7 @@ const LoginUser = asynchandler(async (req, res) => {
     .json(
       new Apiresponse(
         200,
-        { user: user, accessToken, refreshToken },
+        { user, accessToken, refreshToken },
         "User Successfully logged in"
       )
     );
@@ -181,16 +181,24 @@ const accessandrefreshToken = asynchandler(async (req, res) => {
 const changepassword = asynchandler(async (req, res) => {
   const { oldpassword, newpassword } = req.body;
 
+    if (!oldpassword || !newpassword) {
+      throw new ApiError(500,"Please provide both of them")
+    }
+
   const user = await User.findById(req.user?._id);
 
   if (!user) {
-    throw new ApiError(400, "Token Invalisd");
+    throw new ApiError(400, "Token Invalid");
   }
 
   const passwordcorrect = await user.ispasswordcorrect(oldpassword);
 
-  if (!oldpassword) {
-    throw new ApiError(400, "Incorrect Password");
+  if (!passwordcorrect) {
+    throw new ApiError(400, "Please enter valid old password");
+  }
+
+  if(oldpassword === newpassword){
+    throw new ApiError(500,"New password cannot same as old password")
   }
 
   // set new password
