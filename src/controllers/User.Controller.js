@@ -115,7 +115,7 @@ const LoginUser = asynchandler(async (req, res) => {
 
 const LogoutUser = asynchandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, {
-    $set: { refreshToken: undefined },
+    $set: { refreshToken: null },
   });
 
   const options = {
@@ -362,11 +362,16 @@ const getUserChnnelprofile = asynchandler(async (req, res) => {
 });
 
 const getWatchHistory = asynchandler(async (req, res) => {
-  const user = User.aggregate([
+
+  if(!req.user?._id){
+    throw new ApiError(401,"Unauthorize user")
+  }
+
+  const user = await User.aggregate([
     {
       $match: {
-        _id: mongoose.Types.ObjectId(req.user._id),
-      },
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      }
     },
     {
       $lookup: {
@@ -395,7 +400,7 @@ const getWatchHistory = asynchandler(async (req, res) => {
           {
             $addFields: {
               owner: {
-                $First: "$owner",
+                $first: "$owner",
               },
             },
           },
