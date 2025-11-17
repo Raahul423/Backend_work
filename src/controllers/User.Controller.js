@@ -134,7 +134,7 @@ const LogoutUser = asynchandler(async (req, res) => {
 
 const accessandrefreshToken = asynchandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookie?.refreshToken || req.body.refreshToken;
+    req.cookies?.refreshToken || req.body.refreshToken;
   // when i was find the refresh token from user cookie
 
   if (!incomingRefreshToken) {
@@ -154,7 +154,7 @@ const accessandrefreshToken = asynchandler(async (req, res) => {
     throw new ApiError(401, "refresh and accessToken are expired");
   }
 
-  const { accessToken, newrefreshToken } = await generateAccessAndRefreshToken(
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
   );
 
@@ -166,11 +166,11 @@ const accessandrefreshToken = asynchandler(async (req, res) => {
   res
     .status(200)
     .cookie("accessToken", accessToken, option)
-    .cookie("refreshToken", newrefreshToken)
+    .cookie("refreshToken", refreshToken,option)
     .res(
       new Apiresponse(
         200,
-        { accessToken, newrefreshToken },
+        { accessToken, refreshToken },
         "Accesstoken refreshed"
       )
     );
